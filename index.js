@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 require('dotenv').config()
 const port = process.env.PORT || 5001;
+const { ObjectId } = require('mongodb');
 
 // middleware
 
@@ -29,6 +30,7 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("Rcgzhs").collection("users");
+    const studentCollection = client.db("Rcgzhs").collection("students");
 
     // Insert User in this case 
 
@@ -67,6 +69,60 @@ async function run() {
 
       res.send({ Teacher });
     })
+
+    // Show all user in this get method
+
+    app.get('/users', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // user update 
+
+    app.patch('/users/role/:id', async (req, res) => {
+      const id = req.params.id;
+      const { role } = req.body;
+
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: role,
+        },
+      };
+
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+
+    app.delete('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    // added student information in this part
+
+    app.post('/students', async (req, res) => {
+      const students = req.body;
+      const result = await studentCollection.insertOne(students);
+      res.send(result);
+    })
+
+    app.get('/students', async (req, res) => {
+      const result = await studentCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.delete('/students/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await studentCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
 
 
     // Send a ping to confirm a successful connection
