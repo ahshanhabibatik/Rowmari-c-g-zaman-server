@@ -122,6 +122,36 @@ async function run() {
       res.send(result);
     })
 
+    // Update student information
+
+    app.get('/students/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await studentCollection.findOne(query);
+      res.send(result)
+
+    })
+
+    // Assuming you have already set up Express and MongoDB connection
+
+    app.put('/students/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body; // Contains updated student information
+
+      try {
+        const result = await studentCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send("Student information updated successfully");
+        } else {
+          res.status(404).send("Student not found");
+        }
+      } catch (error) {
+        console.error("Error updating student information:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+
 
 
 
