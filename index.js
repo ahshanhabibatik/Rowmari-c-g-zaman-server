@@ -31,6 +31,7 @@ async function run() {
 
     const userCollection = client.db("Rcgzhs").collection("users");
     const studentCollection = client.db("Rcgzhs").collection("students");
+    const resultCollection = client.db("Rcgzhs").collection("results");
 
     // Insert User in this case 
 
@@ -151,8 +152,20 @@ async function run() {
       }
     });
 
+    // result related code 
 
+    app.post('/results', async (req, res) => {
+      const results = req.body;
+      console.log(results)
+      const result = await resultCollection.insertOne(results);
+      res.send(result);
+      console.log(result)
+    })
 
+    app.get('/results', async (req, res) => {
+      const result = await resultCollection.find().toArray();
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
