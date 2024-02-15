@@ -33,6 +33,7 @@ async function run() {
     const studentCollection = client.db("Rcgzhs").collection("students");
     const resultCollection = client.db("Rcgzhs").collection("results");
     const NewsCollection = client.db("Rcgzhs").collection("news");
+    const totalStudentCollection = client.db("Rcgzhs").collection("totalStudent");
 
     // Insert User in this case 
 
@@ -148,7 +149,6 @@ async function run() {
           res.status(404).send("Student not found");
         }
       } catch (error) {
-        console.error("Error updating student information:", error);
         res.status(500).send("Internal Server Error");
       }
     });
@@ -220,10 +220,17 @@ async function run() {
           res.status(404).send("News not found");
         }
       } catch (error) {
-        console.error("Error updating News information:", error);
         res.status(500).send("Internal Server Error");
       }
     });
+
+    // Total Student Collection
+
+    app.get('/totalStudent', async (req, res) => {
+      const result = await totalStudentCollection.find().toArray();
+      res.send(result);
+    });
+
 
 
     // Send a ping to confirm a successful connection
