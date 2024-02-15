@@ -32,6 +32,7 @@ async function run() {
     const userCollection = client.db("Rcgzhs").collection("users");
     const studentCollection = client.db("Rcgzhs").collection("students");
     const resultCollection = client.db("Rcgzhs").collection("results");
+    const NewsCollection = client.db("Rcgzhs").collection("news");
 
     // Insert User in this case 
 
@@ -156,7 +157,6 @@ async function run() {
 
     app.post('/results', async (req, res) => {
       const results = req.body;
-      console.log(results)
       const result = await resultCollection.insertOne(results);
       res.send(result);
       console.log(result)
@@ -166,6 +166,56 @@ async function run() {
       const result = await resultCollection.find().toArray();
       res.send(result);
     })
+
+
+    // news management
+
+    app.post('/news', async (req, res) => {
+      const news = req.body;
+      const result = await NewsCollection.insertOne(news);
+      res.send(result);
+      console.log(result)
+    })
+
+    app.get('/news', async (req, res) => {
+      const result = await NewsCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.delete('/news/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await NewsCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    // Update news information
+
+    app.get('/news/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await NewsCollection.findOne(query);
+      res.send(result)
+
+    })
+
+
+    app.put('/news/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedNewsData = req.body; // Contains updated student information
+
+      try {
+        const result = await NewsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedNewsData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send("News information updated successfully");
+        } else {
+          res.status(404).send("News not found");
+        }
+      } catch (error) {
+        console.error("Error updating News information:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
 
 
     // Send a ping to confirm a successful connection
