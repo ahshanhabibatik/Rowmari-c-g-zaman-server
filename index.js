@@ -5,6 +5,8 @@ require('dotenv').config()
 const port = process.env.PORT || 5001;
 const { ObjectId } = require('mongodb');
 
+
+
 // middleware
 
 app.use(cors());
@@ -34,6 +36,8 @@ async function run() {
     const resultCollection = client.db("Rcgzhs").collection("results");
     const NewsCollection = client.db("Rcgzhs").collection("news");
     const totalStudentCollection = client.db("Rcgzhs").collection("totalStudent");
+    const publishedResultCollection = client.db("Rcgzhs").collection("allResults");
+    const UnpublishedResultCollection = client.db("Rcgzhs").collection("UnPublished");
 
     // Insert User in this case 
 
@@ -176,13 +180,63 @@ async function run() {
       res.send(result);
     })
 
+
+    // public and unpublic result
+
+    // Endpoint for publishing results
+    app.post('/results/publish', async (req, res) => {
+      try {
+        // Retrieve all results from the original database
+        const allResults = await resultCollection.find().toArray();
+
+        // Insert all results into the new database
+        const publishedResults = await publishedResultCollection.insertMany(allResults);
+        res.send("Results published successfully.");
+      } catch (error) {
+        console.error("Error publishing results:", error);
+        res.status(500).send("Error publishing results.");
+      }
+    });
+
+
+ 
+    // Endpoint for unpublishing results
+    app.post('/results/unpublish', async (req, res) => {
+      try {
+        // Delete all documents in the UnpublishedResultCollection
+        await UnpublishedResultCollection.deleteMany();
+    
+        // Retrieve all published results
+        const publishedResults = await publishedResultCollection.find().toArray();
+    
+        // Insert all published results into the UnpublishedResultCollection
+        const insertedResults = await UnpublishedResultCollection.insertMany(publishedResults);
+    
+        // Delete all published results from the publishedResultCollection
+        const deleteResult = await publishedResultCollection.deleteMany();
+        res.send({ deletedCount: deleteResult.deletedCount, insertedCount: insertedResults.insertedCount });
+      } catch (error) {
+        res.status(500).send("Error unpublishing results.");
+      }
+    });
+    
+
+
+
+
+    app.get('/results/publish', async (req, res) => {
+      const result = await publishedResultCollection.find().toArray();
+      res.send(result);
+    })
+
+
     // news management
 
     app.post('/news', async (req, res) => {
       const news = req.body;
       const result = await NewsCollection.insertOne(news);
       res.send(result);
-      console.log(result)
+
     })
 
     app.get('/news', async (req, res) => {
