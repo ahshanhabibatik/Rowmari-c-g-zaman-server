@@ -176,12 +176,12 @@ async function run() {
     app.delete('/results/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
+      console.log(query)
       const result = await resultCollection.deleteOne(query);
+      console.log(result)
       res.send(result);
     })
 
-
-    // public and unpublic result
 
     // Endpoint for publishing results
     app.post('/results/publish', async (req, res) => {
@@ -199,19 +199,19 @@ async function run() {
     });
 
 
- 
+
     // Endpoint for unpublishing results
     app.post('/results/unpublish', async (req, res) => {
       try {
         // Delete all documents in the UnpublishedResultCollection
         await UnpublishedResultCollection.deleteMany();
-    
+
         // Retrieve all published results
         const publishedResults = await publishedResultCollection.find().toArray();
-    
+
         // Insert all published results into the UnpublishedResultCollection
         const insertedResults = await UnpublishedResultCollection.insertMany(publishedResults);
-    
+
         // Delete all published results from the publishedResultCollection
         const deleteResult = await publishedResultCollection.deleteMany();
         res.send({ deletedCount: deleteResult.deletedCount, insertedCount: insertedResults.insertedCount });
@@ -219,15 +219,16 @@ async function run() {
         res.status(500).send("Error unpublishing results.");
       }
     });
-    
-
-
 
 
     app.get('/results/publish', async (req, res) => {
       const result = await publishedResultCollection.find().toArray();
       res.send(result);
     })
+
+
+
+     
 
 
     // news management
