@@ -38,6 +38,7 @@ async function run() {
     const totalStudentCollection = client.db("Rcgzhs").collection("totalStudent");
     const publishedResultCollection = client.db("Rcgzhs").collection("allResults");
     const UnpublishedResultCollection = client.db("Rcgzhs").collection("UnPublished");
+    const AdmitCardCollection = client.db("Rcgzhs").collection("admitCard");
 
     // Insert User in this case 
 
@@ -199,20 +200,16 @@ async function run() {
     });
 
 
-
-    // Endpoint for unpublishing results
     app.post('/results/unpublish', async (req, res) => {
       try {
-        // Delete all documents in the UnpublishedResultCollection
+
         await UnpublishedResultCollection.deleteMany();
 
-        // Retrieve all published results
         const publishedResults = await publishedResultCollection.find().toArray();
 
-        // Insert all published results into the UnpublishedResultCollection
         const insertedResults = await UnpublishedResultCollection.insertMany(publishedResults);
 
-        // Delete all published results from the publishedResultCollection
+
         const deleteResult = await publishedResultCollection.deleteMany();
         res.send({ deletedCount: deleteResult.deletedCount, insertedCount: insertedResults.insertedCount });
       } catch (error) {
@@ -226,9 +223,6 @@ async function run() {
       res.send(result);
     })
 
-
-
-     
 
 
     // news management
@@ -284,6 +278,87 @@ async function run() {
     app.get('/totalStudent', async (req, res) => {
       const result = await totalStudentCollection.find().toArray();
       res.send(result);
+    });
+
+    // AdmitCard Generate code 
+
+    app.post('/admitPost', async (req, res) => {
+      const admit = req.body;
+      const result = await AdmitCardCollection.insertOne(admit);
+      res.send(result);
+    })
+
+    app.get('/admitPost', async (req, res) => {
+      const result = await AdmitCardCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.delete('/admitPost/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await AdmitCardCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
+    // get update admit info
+    app.get('/admitPost/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await AdmitCardCollection.findOne(query);
+      res.send(result)
+
+    })
+
+    app.put('/admitPost/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedAdmitData = req.body;
+
+      try {
+        const result = await AdmitCardCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedAdmitData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send("News information updated successfully");
+        } else {
+          res.status(404).send("News not found");
+        }
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+
+    app.put('/admitPost/publish/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedAdmitData = { role: 'published' }; // Update role to 'published'
+
+      try {
+        const result = await AdmitCardCollection.updateOne({ _id: ObjectId(id) }, { $set: updatedAdmitData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send({ message: "Admit card role updated to published successfully" });
+        } else {
+          res.status(404).send({ message: "Admit card not found" });
+        }
+      } catch (error) {
+        console.error("Error updating admit card role to published:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
+
+    app.put('/admitPost/unpublish/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedAdmitData = { role: 'unpublished' }; // Update role to 'unpublished'
+
+      try {
+        const result = await AdmitCardCollection.updateOne({ _id: ObjectId(id) }, { $set: updatedAdmitData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send({ message: "Admit card role updated to unpublished successfully" });
+        } else {
+          res.status(404).send({ message: "Admit card not found" });
+        }
+      } catch (error) {
+        console.error("Error updating admit card role to unpublished:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
     });
 
 
