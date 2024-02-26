@@ -39,6 +39,9 @@ async function run() {
     const publishedResultCollection = client.db("Rcgzhs").collection("allResults");
     const UnpublishedResultCollection = client.db("Rcgzhs").collection("UnPublished");
     const AdmitCardCollection = client.db("Rcgzhs").collection("admitCard");
+    const PublicAdmitCollection = client.db("Rcgzhs").collection("publicAdmit");
+    const UnPublicAdmitCollection = client.db("Rcgzhs").collection("unPublicAdmit");
+
 
     // Insert User in this case 
 
@@ -259,7 +262,7 @@ async function run() {
 
     app.put('/news/:id', async (req, res) => {
       const id = req.params.id;
-      const updatedNewsData = req.body; // Contains updated student information
+      const updatedNewsData = req.body;
 
       try {
         const result = await NewsCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedNewsData });
@@ -279,6 +282,7 @@ async function run() {
       const result = await totalStudentCollection.find().toArray();
       res.send(result);
     });
+
 
     // AdmitCard Generate code 
 
@@ -301,6 +305,26 @@ async function run() {
       console.log(result)
       res.send(result);
     })
+
+    // update admit card
+
+    app.put('/admitPost/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedAdmitData = req.body;
+
+      try {
+        const result = await AdmitCardCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedAdmitData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send("routine information updated successfully");
+        } else {
+          res.status(404).send("routine not found");
+        }
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+
     // get update admit info
     app.get('/admitPost/:id', async (req, res) => {
       const id = req.params.id;
@@ -310,56 +334,44 @@ async function run() {
 
     })
 
-    app.put('/admitPost/:id', async (req, res) => {
-      const id = req.params.id;
-      const updatedAdmitData = req.body;
-
+    app.post('/Admit/publish', async (req, res) => {
       try {
-        const result = await AdmitCardCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedAdmitData });
-        if (result.modifiedCount > 0) {
-          res.status(200).send("News information updated successfully");
-        } else {
-          res.status(404).send("News not found");
-        }
+        // Retrieve all results from the original database
+        const allAdmit = await AdmitCardCollection.find().toArray();
+
+        // Insert all results into the new database
+        const publishedResults = await PublicAdmitCollection.insertMany(allAdmit);
+        res.send("admit published successfully.");
       } catch (error) {
-        res.status(500).send("Internal Server Error");
+        console.error("Error publishing results:", error);
+        res.status(500).send("Error publishing results.");
       }
     });
 
 
-    app.put('/admitPost/publish/:id', async (req, res) => {
-      const id = req.params.id;
-      const updatedAdmitData = { role: 'published' }; // Update role to 'published'
-
+    app.post('/Admit/unpublish', async (req, res) => {
       try {
-        const result = await AdmitCardCollection.updateOne({ _id: ObjectId(id) }, { $set: updatedAdmitData });
-        if (result.modifiedCount > 0) {
-          res.status(200).send({ message: "Admit card role updated to published successfully" });
-        } else {
-          res.status(404).send({ message: "Admit card not found" });
-        }
+
+        await UnPublicAdmitCollection.deleteMany();
+
+        const publishedAdmit = await PublicAdmitCollection.find().toArray();
+
+        const insertedResults = await UnPublicAdmitCollection.insertMany(publishedAdmit);
+
+
+        const deleteAdmit = await PublicAdmitCollection.deleteMany();
+        res.send({ deletedCount: deleteAdmit.deletedCount, insertedCount: insertedResults.insertedCount });
       } catch (error) {
-        console.error("Error updating admit card role to published:", error);
-        res.status(500).send({ message: "Internal Server Error" });
+        res.status(500).send("Error unpublishing admit.");
       }
     });
 
-    app.put('/admitPost/unpublish/:id', async (req, res) => {
-      const id = req.params.id;
-      const updatedAdmitData = { role: 'unpublished' }; // Update role to 'unpublished'
 
-      try {
-        const result = await AdmitCardCollection.updateOne({ _id: ObjectId(id) }, { $set: updatedAdmitData });
-        if (result.modifiedCount > 0) {
-          res.status(200).send({ message: "Admit card role updated to unpublished successfully" });
-        } else {
-          res.status(404).send({ message: "Admit card not found" });
-        }
-      } catch (error) {
-        console.error("Error updating admit card role to unpublished:", error);
-        res.status(500).send({ message: "Internal Server Error" });
-      }
-    });
+    app.get('/Admit/publish', async (req, res) => {
+      const result = await PublicAdmitCollection.find().toArray();
+      res.send(result);
+    })
+
 
 
 
