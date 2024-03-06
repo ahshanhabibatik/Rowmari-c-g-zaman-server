@@ -1,9 +1,11 @@
-const express = require('express')
-const app = express()
-const cors = require('cors')
-require('dotenv').config()
+const express = require('express');
+const app = express();
+const cors = require('cors');
+require('dotenv').config();
 const port = process.env.PORT || 5001;
 const { ObjectId } = require('mongodb');
+const multer = require('multer');
+const path = require('path');
 
 
 
@@ -41,6 +43,8 @@ async function run() {
     const AdmitCardCollection = client.db("Rcgzhs").collection("admitCard");
     const PublicAdmitCollection = client.db("Rcgzhs").collection("publicAdmit");
     const UnPublicAdmitCollection = client.db("Rcgzhs").collection("unPublicAdmit");
+    const linksCollection = client.db("Rcgzhs").collection("Links");
+    const sscCollection = client.db("Rcgzhs").collection("sscResult");
 
 
     // Insert User in this case 
@@ -373,6 +377,36 @@ async function run() {
     })
 
 
+    // Links related code 
+
+    app.get('/links', async (req, res) => {
+      const result = await linksCollection.find().toArray();
+      res.send(result);
+    })
+
+    const storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Save uploaded files to the 'uploads' directory
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Append unique suffix to file name
+      }
+    });
+
+
+    const upload = multer({ storage: storage });
+    
+    app.post('/sscResult', async (req, res) => {
+      const ssc = req.body;
+      const result = await sscCollection.insertOne(ssc);
+      res.send(result);
+    })
+
+    app.get('/sscResult', async (req, res) => {
+      const result = await sscCollection.find().toArray();
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
