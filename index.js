@@ -85,6 +85,20 @@ async function run() {
       res.send({ Teacher });
     })
 
+
+    // student dashboard
+
+    app.get('/users/role/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let student = false;
+      if (user) {
+        student = user?.role === 'student';
+      }
+      res.send({ student }); 
+    })
+
     // Show all user in this get method
 
     app.get('/users', async (req, res) => {
@@ -151,7 +165,7 @@ async function run() {
 
     app.put('/students/:id', async (req, res) => {
       const id = req.params.id;
-      const updatedData = req.body; // Contains updated student information
+      const updatedData = req.body;
 
       try {
         const result = await studentCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
@@ -384,19 +398,10 @@ async function run() {
       res.send(result);
     })
 
-    const storage = multer.diskStorage({
-      destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Save uploaded files to the 'uploads' directory
-      },
-      filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname)); // Append unique suffix to file name
-      }
-    });
 
 
-    const upload = multer({ storage: storage });
-    
+
+    // ssc result
     app.post('/sscResult', async (req, res) => {
       const ssc = req.body;
       const result = await sscCollection.insertOne(ssc);
