@@ -45,6 +45,7 @@ async function run() {
     const UnPublicAdmitCollection = client.db("Rcgzhs").collection("unPublicAdmit");
     const linksCollection = client.db("Rcgzhs").collection("Links");
     const sscCollection = client.db("Rcgzhs").collection("sscResult");
+    const HeadTeacherCollection = client.db("Rcgzhs").collection("headTeacher");
 
 
     // Insert User in this case 
@@ -96,7 +97,7 @@ async function run() {
       if (user) {
         student = user?.role === 'student';
       }
-      res.send({ student }); 
+      res.send({ student });
     })
 
     // Show all user in this get method
@@ -412,6 +413,13 @@ async function run() {
       const result = await sscCollection.find().toArray();
       res.send(result);
     })
+
+    // Head teacher data show 
+
+    app.get('/headTeacher', async (req, res) => {
+      const result = await HeadTeacherCollection.find().toArray();
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
