@@ -46,6 +46,8 @@ async function run() {
     const linksCollection = client.db("Rcgzhs").collection("Links");
     const sscCollection = client.db("Rcgzhs").collection("sscResult");
     const HeadTeacherCollection = client.db("Rcgzhs").collection("headTeacher");
+    const oldHeadTeacherCollection = client.db("Rcgzhs").collection("oldHeadTeacher");
+    const TeacherCollection = client.db("Rcgzhs").collection("generalTeacher");
 
 
     // Insert User in this case 
@@ -420,6 +422,68 @@ async function run() {
       const result = await HeadTeacherCollection.find().toArray();
       res.send(result);
     });
+    // old head Head teacher data show 
+
+    app.get('/oldHeadTeacher', async (req, res) => {
+      const result = await oldHeadTeacherCollection.find().toArray();
+      res.send(result);
+    });
+
+    // generalTeacher Information
+
+    app.post('/generalTeacher', async (req, res) => {
+      const generalTeacher = req.body;
+      const result = await TeacherCollection.insertOne(generalTeacher);
+      res.send(result);
+    })
+
+
+    app.get('/generalTeacher', async (req, res) => {
+      let query = {};
+      if (req.query?.Email) {
+        query = { email: req.query.Email }
+      }
+      const result = await TeacherCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    app.get('/generalTeacher/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await TeacherCollection.findOne(query);
+      res.send(result)
+
+    })
+
+    app.put('/generalTeacher/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedTeacherData = req.body;
+
+      try {
+        const result = await TeacherCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedTeacherData });
+        if (result.modifiedCount > 0) {
+          res.status(200).send("News information updated successfully");
+        } else {
+          res.status(404).send("News not found");
+        }
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.get('/homePageTeacher', async (req, res) => {
+      const result = await TeacherCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    app.get('/homePageTeacher/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await TeacherCollection.findOne(query);
+      res.send(result)
+
+    })
 
 
     // Send a ping to confirm a successful connection
