@@ -4,7 +4,6 @@ const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5001;
 const { ObjectId } = require('mongodb');
-const multer = require('multer');
 const path = require('path');
 
 
@@ -48,6 +47,8 @@ async function run() {
     const HeadTeacherCollection = client.db("Rcgzhs").collection("headTeacher");
     const oldHeadTeacherCollection = client.db("Rcgzhs").collection("oldHeadTeacher");
     const TeacherCollection = client.db("Rcgzhs").collection("generalTeacher");
+    const eventCollection = client.db("Rcgzhs").collection("event");
+
 
 
     // Insert User in this case 
@@ -438,6 +439,8 @@ async function run() {
     })
 
 
+
+
     app.get('/generalTeacher', async (req, res) => {
       let query = {};
       if (req.query?.Email) {
@@ -451,6 +454,11 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await TeacherCollection.findOne(query);
+      res.send(result)
+
+    })
+    app.get('/generalTeacher', async (req, res) => {
+      const result = await TeacherCollection.find().toArray();
       res.send(result)
 
     })
@@ -485,6 +493,26 @@ async function run() {
 
     })
 
+    // event management
+    app.post('/postEvent', async (req, res) => {
+      const event = req.body;
+      const result = await eventCollection.insertOne(event);
+      res.send(result);
+    })
+
+    app.get('/getEvent', async (req, res) => {
+      const result = await eventCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.delete('/event/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await eventCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
