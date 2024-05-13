@@ -48,6 +48,7 @@ async function run() {
     const oldHeadTeacherCollection = client.db("Rcgzhs").collection("oldHeadTeacher");
     const TeacherCollection = client.db("Rcgzhs").collection("generalTeacher");
     const eventCollection = client.db("Rcgzhs").collection("event");
+    const AdmissionCollection = client.db("Rcgzhs").collection("admission");
 
 
 
@@ -512,6 +513,18 @@ async function run() {
       const result = await eventCollection.deleteOne(query);
       console.log(result)
       res.send(result);
+    })
+
+    // admission 
+    app.post('/admissionApply', async (req, res) => {
+      const admissionApply = req.body;
+      const result = await AdmissionCollection.insertOne(admissionApply);
+      res.send(result);
+    })
+
+    app.get('/admissionApply', async (req, res) => {
+      const result = await AdmissionCollection.find().toArray();
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
