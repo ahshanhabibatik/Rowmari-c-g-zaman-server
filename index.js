@@ -49,6 +49,7 @@ async function run() {
     const TeacherCollection = client.db("Rcgzhs").collection("generalTeacher");
     const eventCollection = client.db("Rcgzhs").collection("event");
     const AdmissionCollection = client.db("Rcgzhs").collection("admission");
+    const AdmissionNewsCollection = client.db("Rcgzhs").collection("AdNews");
 
 
 
@@ -526,6 +527,79 @@ async function run() {
       const result = await AdmissionCollection.find().toArray();
       res.send(result)
     })
+
+    app.delete('/admissionApply/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await AdmissionCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
+
+    app.put('/admissionApply/:id', async (req, res) => {
+      const id = req.params.id;
+      const { status } = req.body; // Extract the status from req.body
+      try {
+        const query = { _id: new ObjectId(id) };
+        const admission = await AdmissionCollection.findOne(query);
+
+        if (!admission) {
+          return res.status(404).json({ message: "Admission not found" });
+        }
+
+        // Update the status field with the provided status
+        const result = await AdmissionCollection.updateOne(query, { $set: { status } });
+        if (result.modifiedCount === 1) {
+          return res.json({ message: "Status updated successfully" });
+        } else {
+          return res.status(500).json({ message: "Failed to update status" });
+        }
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // admission open 
+
+    app.post('/admissionOpen', async (req, res) => {
+      const admissionApply = req.body;
+      const result = await AdmissionCollection.insertOne(admissionApply);
+      res.send(result);
+    })
+
+    app.get('/admissionOpen', async (req, res) => {
+      const result = await AdmissionCollection.find().toArray();
+      res.send(result)
+    })
+    app.post('/admissionNews', async (req, res) => {
+      const admissionApply = req.body;
+      const result = await AdmissionNewsCollection.insertOne(admissionApply);
+      res.send(result);
+    })
+
+    app.get('/admissionNews', async (req, res) => {
+      const result = await AdmissionNewsCollection.find().toArray();
+      res.send(result)
+    })
+    app.delete('/admissionNews/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await AdmissionNewsCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
+    app.delete('/admissionOpen/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await AdmissionCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
