@@ -50,6 +50,9 @@ async function run() {
     const eventCollection = client.db("Rcgzhs").collection("event");
     const AdmissionCollection = client.db("Rcgzhs").collection("admission");
     const AdmissionNewsCollection = client.db("Rcgzhs").collection("AdNews");
+    const bookCollection = client.db("Rcgzhs").collection("bookCollection");
+    const TeacherNoticeCollection = client.db("Rcgzhs").collection("teacherNotice");
+    const AcademicRoutineCollection = client.db("Rcgzhs").collection("routine");
 
 
 
@@ -507,6 +510,33 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/getEvent/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await eventCollection.findOne(query);
+      res.send(result)
+
+    })
+
+    app.put('/event/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedAdmitData = req.body;
+
+      try {
+        const result = await eventCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedAdmitData });
+        if (result.modifiedCount > 0) {
+          res.status(200).json({ modifiedCount: result.modifiedCount, message: "Event information updated successfully" });
+        } else {
+          res.status(404).json({ message: "Event not found" });
+        }
+      } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+
+
+
     app.delete('/event/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -599,7 +629,50 @@ async function run() {
       console.log(result)
       res.send(result);
     })
+    app.get('/bookCollection', async (req, res) => {
+      const result = await bookCollection.find().toArray();
+      res.send(result)
+    })
 
+    app.post('/teacherNotice', async (req, res) => {
+      const teacherNotice = req.body;
+      const result = await TeacherNoticeCollection.insertOne(teacherNotice);
+      res.send(result);
+    })
+
+    app.get('/teacherNotice', async (req, res) => {
+      const result = await TeacherNoticeCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.delete('/teacherNotice/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await TeacherNoticeCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
+
+    app.post('/routine', async (req, res) => {
+      const routine = req.body;
+      const result = await AcademicRoutineCollection.insertOne(routine);
+      res.send(result);
+    })
+
+    app.get('/routine', async (req, res) => {
+      const result = await AcademicRoutineCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.delete('/routine/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      console.log(query)
+      const result = await AcademicRoutineCollection.deleteOne(query);
+      console.log(result)
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
